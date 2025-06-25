@@ -2,7 +2,7 @@
 import streamlit as st
 from typing import List, Set, Dict, Optional
 
-# --- DSU for Taste Clusters --- #
+#DSU for Taste Clusters 
 class DSU:
     def __init__(self):
         self.parent: Dict[str, str] = {}
@@ -24,7 +24,7 @@ class DSU:
         roots = {self.find(t) for t in taste_list}
         return {t for t in self.parent if self.find(t) in roots}
 
-# --- Graph + Profile --- #
+#Using Graph + Profile
 class Graph:
     def __init__(self):
         self.adj: Dict[str, Set[str]] = {}
@@ -37,7 +37,7 @@ class Graph:
         ]
         self.taste_dsu = DSU()
 
-    # ---- DSU logic ---- #
+    #DSU logic
     def _rebuild_taste_dsu(self):
         self.taste_dsu = DSU()
         for taste in self.taste_list:
@@ -64,7 +64,7 @@ class Graph:
                 users.add(other)
         return users
 
-    # ---- CRUD ---- #
+    #CRUD
     def add_user(self, user: str, bio: str, tastes: List[str], password: str = ""):
         user = user.strip()
         if not user or user in self.adj:
@@ -105,7 +105,7 @@ class Graph:
             self.adj[u].remove(v)
             self.adj[v].remove(u)
 
-    # ---- Graph Algorithms ---- #
+    #Graph Algorithms
     def bfs_shortest_path(self, src: str, dst: str) -> Optional[List[str]]:
         if src not in self.adj or dst not in self.adj:
             return None
@@ -141,20 +141,20 @@ class Graph:
             return []
         direct = self.adj[u]
         user_tastes = set(self.profile[u]["tastes"])
-        # Friends-of-friends
+        #Friends-of-friends
         fof = set()
         for f in direct:
             fof.update(self.adj[f])
         fof.discard(u)
         fof -= direct
-        # Users in any shared taste cluster
+        #Users in any shared taste cluster
         cluster_users = self.users_in_same_taste_cluster(u)
         shared_taste_counts = {}
         for other in cluster_users | fof:
             if other == u: continue
             shared = user_tastes & set(self.profile[other]["tastes"])
             shared_taste_counts[other] = len(shared)
-        # Build buckets
+        #Build buckets
         both = [name for name in (cluster_users & fof)]
         cluster_only = [name for name in (cluster_users - set(both) - direct)]
         fof_only = [name for name in (fof - set(both))]
