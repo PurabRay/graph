@@ -4,7 +4,7 @@ import streamlit as st
 from pymongo import MongoClient
 from typing import List, Set, Dict, Optional
 
-# --- MongoDB Setup via Streamlit Secrets ---
+#MongoDB Setup via Streamlit Secrets
 MONGO_URI    = st.secrets["mongo_uri"]
 client       = MongoClient(MONGO_URI)
 db           = client["social_app"]
@@ -12,7 +12,7 @@ profiles_col = db["profiles"]        # { username, bio, tastes:list[str], passwo
 friends_col  = db["friendships"]     # { username, friends:list[str] }
 requests_col = db["friend_requests"] # { username, requests:list[str] }
 
-# --- DSU for Taste Clusters ---
+#DSU for Taste Clusters
 class DSU:
     def __init__(self):
         self.parent: Dict[str, str] = {}
@@ -33,7 +33,7 @@ class DSU:
         roots = {self.find(t) for t in taste_list}
         return {t for t in self.parent if self.find(t) in roots}
 
-# --- In-memory Graph + Persistence Logic ---
+#In-memory Graph + Persistence Logic
 class Graph:
     def __init__(self):
         self.adj: Dict[str, Set[str]]      = {}
@@ -47,7 +47,7 @@ class Graph:
         ]
         self.taste_dsu = DSU()
 
-    # rebuild DSU whenever profiles change
+    #rebuild DSU whenever profiles change
     def _rebuild_taste_dsu(self):
         self.taste_dsu = DSU()
         for t in self.taste_list:
@@ -70,7 +70,7 @@ class Graph:
             if other != user and set(pdata.get("tastes", [])) & ct
         }
 
-    # --- CRUD & Avatars ---
+    #CRUD & Avatars
     def add_user(self,
                  user: str,
                  bio: str,
@@ -115,7 +115,7 @@ class Graph:
         self.pending_requests.pop(user, None)
         self._rebuild_taste_dsu()
 
-    # --- Friendships ---
+    #Friendships
     def add_friendship(self, u: str, v: str):
         if u == v:
             return
@@ -129,7 +129,7 @@ class Graph:
         self.adj.get(u, set()).discard(v)
         self.adj.get(v, set()).discard(u)
 
-    # --- Friend Requests ---
+    #Friend Requests
     def send_friend_request(self, sender: str, receiver: str):
         if receiver not in self.profile:
             return
@@ -150,7 +150,7 @@ class Graph:
     def reject_friend_request(self, sender: str, receiver: str):
         self.pending_requests.get(receiver, set()).discard(sender)
 
-    # --- Shortest Path (safe) ---
+    #Shortest Path (safe)
     def bfs_shortest_path(self, src: str, dst: str) -> Optional[List[str]]:
         if src not in self.adj or dst not in self.adj:
             return None
@@ -176,7 +176,7 @@ class Graph:
     def mutual_friends(self, u: str, v: str) -> Set[str]:
         return self.adj.get(u, set()) & self.adj.get(v, set())
 
-    # --- Recommendations (safe lookups) ---
+    #Recommendations (safe lookups)
     def recommend_friends(self, u: str) -> List[tuple]:
         if u not in self.adj:
             return []
@@ -235,7 +235,7 @@ class Graph:
             "avatar": None
         })
 
-# --- DB ↔ Graph Persistence ---
+#DB
 def load_graph_from_db() -> Graph:
     g = Graph()
     # load profiles
@@ -247,10 +247,10 @@ def load_graph_from_db() -> Graph:
             password=doc.get("password", ""),
             avatar=doc.get("avatar", None)
         )
-    # load friendships
+    #load friendships
     for doc in friends_col.find():
         g.adj[doc["username"]] = set(doc.get("friends", []))
-    # load pending requests
+    #load pending requests
     for doc in requests_col.find():
         g.pending_requests[doc["username"]] = set(doc.get("requests", []))
     g._rebuild_taste_dsu()
