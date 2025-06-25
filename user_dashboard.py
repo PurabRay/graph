@@ -4,17 +4,17 @@ from user_graph_db import load_graph_from_db, persist_graph
 st.set_page_config(page_title="User Dashboard", layout="wide")
 
 def main():
-    # 1) Restore login from URL
+   
     params = st.query_params
     if "user" in params and "user" not in st.session_state:
         raw = params["user"]
         st.session_state["user"] = raw[-1] if isinstance(raw, list) else raw
 
-    # 2) Load graph
+   
     g = load_graph_from_db()
     users = sorted(g.adj.keys())
 
-    # 3) Login / Sign Up
+    
     if "user" not in st.session_state:
         st.title("Welcome to the User Dashboard")
         mode = st.radio("Choose mode", ["Login", "Sign Up"])
@@ -55,23 +55,23 @@ def main():
                     st.success("Signed up successfully.")
         return  # don’t render the rest until logged in
 
-    # 4) Main Dashboard
+    
     user = st.session_state["user"]
     st.title(f"Welcome, {user}!")
 
-    # Log out
+   
     if st.button("Log out"):
         del st.session_state["user"]
         st.query_params.clear()
         st.success("Logged out successfully")
         return
 
-    # Show avatar if present
+    
     prof = g.get_profile(user)
     if prof.get("avatar"):
         st.image(prof["avatar"], width=150)
 
-    # Your Friends (hidden until expanded)
+    
     with st.expander("Your Friends"):
         friends = sorted(g.adj.get(user, set()))
         if friends:
@@ -85,7 +85,7 @@ def main():
         else:
             st.write("You have no friends yet.")
 
-    # Incoming Friend Requests
+    
     st.subheader("Incoming Friend Requests")
     incoming = g.get_incoming_requests(user)
     if incoming:
@@ -105,7 +105,7 @@ def main():
     else:
         st.write("No incoming requests.")
 
-    # Friend Recommendations
+    
     st.subheader("Friend Recommendations")
     recs = g.recommend_friends(user)
     if recs:
@@ -125,7 +125,7 @@ def main():
     else:
         st.write("No recommendations at this time.")
 
-    # People in Your Network (FoF)
+    
     st.subheader("People in Your Network")
     fof = set()
     for f in g.adj.get(user, set()):
@@ -155,7 +155,7 @@ def main():
     else:
         st.write("No one in your network beyond your friends.")
 
-    # --- New: Check Mutual Friends ---
+    
     st.subheader("Check Mutual Friends")
     friends = sorted(g.adj.get(user, set()))
     if friends:
