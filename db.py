@@ -1,7 +1,7 @@
 import streamlit as st
 from pymongo import MongoClient
 
-# Replace with your actual MongoDB URI if needed
+
 MONGO_URI = "mongodb+srv://purabray2:Ray2005@cluster0.xrjmm.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
 client = MongoClient(MONGO_URI)
 db = client["social_app"]
